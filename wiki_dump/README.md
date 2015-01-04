@@ -3,13 +3,13 @@
 ## Building `wiki.db`
 
 1. Download the file [`enwiki-latest-pages-articles.xml`](https://dumps.wikimedia.org/enwiki/latest/).
-2. Run [`WikiExtractor.py`](WikiExtractor.py) to expand out the xml into easily parsable blocks. To run it with 2.5 MB chunks, the format is:
+2. Run [`WikiExtractor.py`](WikiExtractor.py) to expand out the xml into easily parsable blocks. To run it with 2.5 MB chunks:
 
 ````
 cat enwiki-latest-pages-articles.xml | python WikiExtractor.py  -o extract/ -b 2500K -s
 ````
 
-3. Run `build_database.py` to build the inital wiki database.
+3. Run [`build_database.py`](build_database.py) to build the inital wiki database.
 
 ## Building `JJ_noun_phrase.db`
 
