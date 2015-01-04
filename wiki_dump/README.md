@@ -1,4 +1,4 @@
-### Tools to extract the needed information from wikipedia.
+### Tools to build a noun phrase database from wikipedia.
 
 ## Building `wiki.db`
 
@@ -8,7 +8,7 @@
 
 ## Building `JJ_noun_phrase.db`
 
-1. Run `noun_phrase_extract.py` to extract all the noun phrases into raw text.
+1. Run [`noun_phrase_extract.py`](noun_phrase_extract.py) to extract all the noun phrases into raw text.
 2. Run `build_NP_JJ_database.py` to pull those phrases into a database.
 3. Run `build_most_common_JJNP.py` to compute statistics and indices.
 
