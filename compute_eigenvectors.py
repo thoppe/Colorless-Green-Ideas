@@ -1,16 +1,21 @@
 from __future__ import division
 import sqlite3
 import pandas as pd
-import scipy.linalg
+import numpy as np
+from sklearn.decomposition import PCA
+
 
 f_db = "JJ_noun_phrase.db"
 conn = sqlite3.connect(f_db)
 
-noun_n = 50
-adj_n  = noun_n*2
+noun_n = 2000
+adj_n  = 10000
+variance_ratio = 0.50
+
+query_word = "cat"
 
 most_common_word = '''
-SELECT {pos}.id, {pos}.name FROM {freq_name}
+SELECT {pos}.name FROM {freq_name}
 INNER JOIN {pos} ON {pos}.id={freq_name}.id
 ORDER BY {freq_name}.count DESC
 LIMIT {limit}
@@ -21,10 +26,10 @@ common_nouns = most_common_word.format(pos="nouns",
 common_adjs  = most_common_word.format(pos="adjs",
                                        freq_name="freq_adj",
                                        limit=adj_n)
-lookup_noun = dict(list(conn.execute(common_nouns)))
-lookup_adj  = dict(list(conn.execute(common_adjs)))
+nouns = list([x[0] for x in conn.execute(common_nouns)])
+adjs  = list([x[0] for x in conn.execute(common_adjs)])
 
-
+assert(query_word in nouns)
 
 cmd_common_noun_id = '''
 SELECT nouns.id FROM freq_nouns
@@ -49,8 +54,8 @@ AND   rel.adj_id  IN ({})
 '''.format(cmd_common_noun_id, cmd_common_adj_id)
 
 
-df = pd.DataFrame(index=lookup_noun.values(),
-                  columns=lookup_adj.values(),
+df = pd.DataFrame(index=nouns,
+                  columns=adjs,
                   dtype=float)
 
 # Populate the dataframe
@@ -63,14 +68,30 @@ print "Row normalizing"
 def row_norm(row): return row/row.sum()
 df = df.fillna(0).apply(row_norm, axis=1, raw=True)
 
-print "Computing SVD"
-U,s,V = scipy.linalg.svd(df)
-print U
-print U.shape
+#print "Computing SVD"
+print "Computing PCA"
+pca = PCA(n_components=variance_ratio)
+U = pca.fit_transform(df)
+pca_score = pca.explained_variance_ratio_
+V = pca.components_
+msg = "PCA required {} components for an explained variance of {}"
+print msg.format(pca.n_components, pca_score.sum())
 
-#import pylab as plt
-#s /= s.max()
-#plt.semilogy(s)
-#plt.show()
+nouns_pca = pd.DataFrame(U, index=nouns)
+adjs_pca  = pd.DataFrame(V.T, index=adjs)
 
-exit()
+print "Example output: "
+print nouns_pca.ix[:3,:4]
+print adjs_pca.ix[:3,:4]
+
+#noun = "design"
+#noun = "original"
+#adj1 = "
+print "Reconstruction for {}".format(query_word)
+n1 = nouns_pca.T[query_word]
+score = adjs_pca.dot(n1)
+score.sort(ascending=False,inplace=True)
+print score
+
+
+
