@@ -2,18 +2,18 @@ from __future__ import division
 import sqlite3
 import pandas as pd
 import numpy as np
-from sklearn.decomposition import PCA, RandomizedPCA
+from sklearn.decomposition import RandomizedPCA
 
 f_db = "JJ_noun_phrase.db"
 conn = sqlite3.connect(f_db)
 
 noun_n = 5000
-adj_n  = 30000
-svd_components = 100
+adj_n  = 10000
+svd_components = 300
 
-#noun_n = 1500
-#adj_n  = 3000
-#svd_components = 100
+#noun_n = 150
+#adj_n  = 300
+#svd_components = 5
 
 query_noun = "idea"
 query_adj  = "colorless"
@@ -73,22 +73,27 @@ df = df.fillna(0).apply(row_norm, axis=1, raw=True)
 
 print "Computing PCA"
 pca = RandomizedPCA(n_components=svd_components)
-#pca = PCA(n_components=svd_components)
 U = pca.fit_transform(df)
 pca_score = pca.explained_variance_ratio_
 V = pca.components_
+
 msg = "PCA used {} components for an explained variance of {}"
 print msg.format(pca.n_components, pca_score.sum())
 
 col_names = ["u{:d}".format(i) for i in xrange(pca.n_components)]
 nouns_pca = pd.DataFrame(U, index=nouns, columns =col_names)
 adjs_pca  = pd.DataFrame(V.T, index=adjs, columns=col_names)
+singular_values = pd.DataFrame(pca_score)
 
 #adjs_cols = ["v{:d}".format(i) for i in xrange(pca.n_components_)]
 
 
-# Add the dataframe to the database
+# Add the dataframe to the databas
+conn.execute("DROP TABLE IF EXISTS PCA_nouns")
+conn.execute("DROP TABLE IF EXISTS PCA_adjs")
+conn.execute("DROP TABLE IF EXISTS PCA_explained_variance")
 nouns_pca.to_sql("PCA_nouns", conn, if_exists="replace")
 adjs_pca.to_sql("PCA_adjs", conn, if_exists="replace")
+singular_values.to_sql("PCA_explained_variance", conn, if_exists="replace")
 
 conn.commit()
