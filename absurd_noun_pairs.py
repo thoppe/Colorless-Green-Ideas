@@ -48,7 +48,7 @@ def absurd_JJ_JJ_NN(noun=None, cutoff=-0.002):
     scores = s2, distance1[a1], distance2[a2]
     return (a1,a2,noun), scores
 
-def quality_filter(noun, low=-0.75, high=-0.01):
+def quality_filter(noun, low=-0.075, high=-0.010):
     '''
     Generates absurd phrases that are not too absurd (which are boring,
     they use common adjectives), yet still have that je nes se pas
@@ -61,7 +61,7 @@ def quality_filter(noun, low=-0.75, high=-0.01):
      
 cutoff = -.005
 
-for k in xrange(200):
+for k in xrange(500):
     noun = np.random.choice(nouns.index)
     phrase, scores = quality_filter(noun)
     output = "{:.4f} {:20s}".format(sum(scores),' '.join(phrase))

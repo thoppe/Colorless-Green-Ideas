@@ -11,30 +11,30 @@ Consider Chomsky's sentence:
 
 The sentence is _grammatically correct_ (syntax) but _meaningless_ (semantics). 
 It is hard to imagine an idea being both green and colorless and that an idea that can sleep with fury.
-It was posited as a sentence that had never been uttered before in the English language, and without his thesis, probably never would be.
+It was posited as a sentence that had never been uttered before in the English language, and without Chomsky's construction  probably never would have been.
 It is beautiful in its absurdity, so let's create more!
 
 ### Noun phrases
 
 Natural language processing is hard, so let's restrict the problem to the titular project, the `Colorless green idea`. 
 This is a **noun phrase**, a particular one with the structure of `JJ JJ NN*` where `JJ` refers to an adjective and `NN*` refers to any noun variant (WordNet syntax).
-If we had some large corpus of text we could find all noun phrases of the type `JJ ... JJ NN*` and associate each adjective with the corresponding noun, essentially a bigram database.
+If we had some large corpus of text we could find all noun phrases of the type `JJ ... JJ NN*` and associate each adjective with the corresponding noun, essentially a [bigram](http://en.wikipedia.org/wiki/Bigram) database.
 
 ### Syntactic singular vectors
 
 If the goal is to create meaningless noun phrases, a bigram database won't give us anything that we haven't seen before.
 This is unacceptable.
-Therefore, we seek a decomposition and perform a singular value decomposition over the (noun) normalized database.
-We specifically keep the explained variance moderate, if it was too high it would simply recreate the bigram database, if it was too low we would low word relations.
+Therefore, we seek a decomposition and perform a [singular value decomposition](http://en.wikipedia.org/wiki/Singular_value_decomposition) over the (noun) normalized database.
+We specifically keep the explained variance somewhat low, if it was too high it would simply recreate the bigram database, if it was too low we would lose all word relations.
 This naturally fuzzes the data; the left singular vectors represent a subspace where nouns are correlated to other nouns that share common adjectives and the right singular vectors represent a subspace where the adjectives are correlated to other adjectives that share a common noun.
 Simple right?
 
 ### `JJ JJ NN`
 
-Starting with a noun `NN`, we choose a set of adjectives that are ["far away"](http://mathworld.wolfram.com/L2-Norm.html) from that noun. 
+Starting with a noun `NN`, we choose a set of adjectives that are "[far away](http://mathworld.wolfram.com/L2-Norm.html)" from that noun. 
 Selecting the first one `JJ1`, we select a second adjective `JJ2` that far away from the first adjective `JJ1`.
-This gives us a score for each of the pairings, `JJ1,JJ2`, `JJ1,NN`, `JJ2,NN`. 
-Using the sample database, a human arbitrarily decided that a combined score s, in the range of `-0.075 < s < -0.010` was optimal.
+This gives us a score for each of the pairings, `(JJ1,JJ2)`, `(JJ1,NN)`, and `(JJ2,NN)`. 
+Using the sample database, a human arbitrarily decided that a combined score, in the range of `-0.075 < s < -0.010` was optimal.
 Why have a lower bound?
 It turns out that phrases that have very absurd scores are simply common words that are orthogonal to each other like places and colors, the correct output but boring. 
 I prefer a "industrial legislative falcon".
@@ -66,7 +66,7 @@ Here are some of my favorites:
 ## Getting Started:
 
 To get started, build a noun phrase database. 
-I built my from Wikipedia, and the tools for it can be found in this repository [here](wiki_dump/).
+I built my from Wikipedia, and the tools for it can be found in this repository [here](noun_phrase/).
 If you'd rather not build your own, you can use the included database, `JJ_noun_phrase.db` and simply run:
 
     python absurd_noun_pairs.py
