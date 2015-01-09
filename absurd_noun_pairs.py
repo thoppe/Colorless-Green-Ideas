@@ -13,14 +13,18 @@ var   = pd.read_sql("SELECT * FROM PCA_explained_variance", conn,index_col="inde
 eigenvalue_cut = 300
 nouns = nouns.ix[:,:eigenvalue_cut]
 adjs  = adjs.ix[:,:eigenvalue_cut]
-var   = var.ix[:eigenvalue_cut]
+var   = var[:eigenvalue_cut]
 explained_variance = var.ix[:,0].sum()
+
+# So we can multiply them together
+var = var.as_matrix().reshape(-1)
+
 print "Explained variance in sample: ", explained_variance
 
 def anti_word(word,source,target,cutoff=-.002):
     # Returns an adjective that is far from the target
 
-    distance = target.dot(source.T[word])
+    distance = target.dot((source*var).T[word])
     distance.sort()
     distance /= np.linalg.norm(distance)
     distance = distance[(distance < cutoff)]
@@ -44,12 +48,21 @@ def absurd_JJ_JJ_NN(noun=None, cutoff=-0.002):
     scores = s2, distance1[a1], distance2[a2]
     return (a1,a2,noun), scores
 
+def quality_filter(noun, low=-0.75, high=-0.01):
+    '''
+    Generates absurd phrases that are not too absurd (which are boring,
+    they use common adjectives), yet still have that je nes se pas
+    '''
+    total_score = 0
+    while not low < total_score < high:
+        phrase, scores = absurd_JJ_JJ_NN(noun, cutoff=cutoff)
+        total_score = sum(scores)
+    return phrase, scores
+     
 cutoff = -.005
 
-noun = "idea"
-
-for k in xrange(2000):
-    phrase, scores = absurd_JJ_JJ_NN(noun="idea", cutoff=cutoff)
-    #print len(distance1), len(distance2)
-    #print "({}) {} {}".format(*scores)
-    print ' '.join(phrase), sum(scores)
+for k in xrange(200):
+    noun = np.random.choice(nouns.index)
+    phrase, scores = quality_filter(noun)
+    output = "{:.4f} {:20s}".format(sum(scores),' '.join(phrase))
+    print output
