@@ -11,8 +11,10 @@ adjs  = pd.read_sql("SELECT * FROM PCA_adjs", conn,index_col="index")
 var   = pd.read_sql("SELECT * FROM PCA_explained_variance", conn,index_col="index")
 
 eigenvalue_cut = 300
-nouns = nouns.ix[:,:eigenvalue_cut]
-adjs  = adjs.ix[:,:eigenvalue_cut]
+common_nouns = 100
+common_adjs  = 100
+nouns = nouns.ix[common_nouns:,:eigenvalue_cut]
+adjs  = adjs.ix[common_adjs:,:eigenvalue_cut]
 var   = var[:eigenvalue_cut]
 explained_variance = var.ix[:,0].sum()
 
