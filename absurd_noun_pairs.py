@@ -11,8 +11,8 @@ adjs  = pd.read_sql("SELECT * FROM PCA_adjs", conn,index_col="index")
 var   = pd.read_sql("SELECT * FROM PCA_explained_variance", conn,index_col="index")
 
 eigenvalue_cut = 300
-common_nouns = 100
-common_adjs  = 100
+common_nouns = 200
+common_adjs  = 400
 nouns = nouns.ix[common_nouns:,:eigenvalue_cut]
 adjs  = adjs.ix[common_adjs:,:eigenvalue_cut]
 var   = var[:eigenvalue_cut]
@@ -47,8 +47,9 @@ def absurd_JJ_JJ_NN(noun=None, cutoff=-0.002):
         except:
             cutoff /= 2
 
-    scores = s2, distance1[a1], distance2[a2]
+    scores = s2, distance1[a1], distance1[a2]
     return (a1,a2,noun), scores
+
 
 def quality_filter(noun, low=-0.075, high=-0.010):
     '''
@@ -66,5 +67,6 @@ cutoff = -.005
 for k in xrange(500):
     noun = np.random.choice(nouns.index)
     phrase, scores = quality_filter(noun)
-    output = "{:.4f} {:20s}".format(sum(scores),' '.join(phrase))
-    print output
+    output = "{:.4f} {:20s}"
+    output_vals = sum(scores), ' '.join(phrase)
+    print output.format(*output_vals)
