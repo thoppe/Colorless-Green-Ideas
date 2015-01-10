@@ -3,28 +3,8 @@ import sqlite3
 import pandas as pd
 import numpy as np
 
-f_db = "JJ_noun_phrase.db"
-conn = sqlite3.connect(f_db)
-
-nouns = pd.read_sql("SELECT * FROM PCA_nouns",conn,index_col="index")
-adjs  = pd.read_sql("SELECT * FROM PCA_adjs", conn,index_col="index")
-var   = pd.read_sql("SELECT * FROM PCA_explained_variance", conn,index_col="index")
-
-eigenvalue_cut = 300
-common_nouns = 200
-common_adjs  = 400
-nouns = nouns.ix[common_nouns:,:eigenvalue_cut]
-adjs  = adjs.ix[common_adjs:,:eigenvalue_cut]
-var   = var[:eigenvalue_cut]
-explained_variance = var.ix[:,0].sum()
-
-# So we can multiply them together
-var = var.as_matrix().reshape(-1)
-
-print "Explained variance in sample: ", explained_variance
-
 def anti_word(word,source,target,cutoff=-.002):
-    # Returns an adjective that is far from the target
+    # Returns a word that is far from the target from an SVD approximation
 
     distance = target.dot((source*var).T[word])
     distance.sort()
@@ -47,7 +27,7 @@ def absurd_JJ_JJ_NN(noun=None, cutoff=-0.002):
         except:
             cutoff /= 2
 
-    scores = s2, distance1[a1], distance1[a2]
+    scores = distance1[a1], distance1[a2], s2
     return (a1,a2,noun), scores
 
 
@@ -61,12 +41,41 @@ def quality_filter(noun, low=-0.075, high=-0.010):
         phrase, scores = absurd_JJ_JJ_NN(noun, cutoff=cutoff)
         total_score = sum(scores)
     return phrase, scores
-     
+
+verbose = True
+
+f_db = "JJ_noun_phrase.db"
+conn = sqlite3.connect(f_db)
+
+nouns = pd.read_sql("SELECT * FROM PCA_nouns",conn,index_col="index")
+adjs  = pd.read_sql("SELECT * FROM PCA_adjs", conn,index_col="index")
+var   = pd.read_sql("SELECT * FROM PCA_explained_variance", 
+                    conn,index_col="index")
+
+eigenvalue_cut = 300
+common_nouns   = 200
+common_adjs    = 400
+nouns = nouns.ix[common_nouns:,:eigenvalue_cut]
+adjs  = adjs.ix[common_adjs:,:eigenvalue_cut]
+var   = var[:eigenvalue_cut]
+explained_variance = var.ix[:,0].sum()
+
+# So we can multiply them together
+var = var.as_matrix().reshape(-1)
+
+print "Explained variance in sample: ", explained_variance
 cutoff = -.005
 
 for k in xrange(500):
     noun = np.random.choice(nouns.index)
     phrase, scores = quality_filter(noun)
-    output = "{:.4f} {:20s}"
-    output_vals = sum(scores), ' '.join(phrase)
+    
+    if verbose:
+        s1,s2,s3 = scores
+        output = "{:4f} {:4f} {:4f} {:4f} {:20s}"
+        output_vals = sum(scores),s1,s2,s3, ' '.join(phrase)
+    else:
+        output = "{:.4f} {:20s}"
+        output_vals = sum(scores), ' '.join(phrase)
+
     print output.format(*output_vals)
