@@ -19,8 +19,8 @@ cat enwiki-latest-pages-articles.xml | python WikiExtractor.py  -o extract/ -b 2
 3. Run [`build_most_common_JJNP.py`](build_most_common_JJNP.py) to compute statistics and indices.
 4. Run [`compute_eigenvectors.py`](compute_eigenvectors.py) to perform the singular value decomposition.
 
+### Compress `JJ_noun_phrase.db` to `JJ_noun_phrase.h5`
 
+There is no reason to store the data in SQLite3 format.
 
-
-
-
+1. Run [`convert_sql_h5py.py`](`convert_sql_h5py.py`). You can remove the old sql file.

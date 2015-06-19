@@ -1,5 +1,4 @@
 from __future__ import division
-import sqlite3
 import pandas as pd
 import numpy as np
 
@@ -9,7 +8,7 @@ def anti_word(word,source,target,cutoff=-.002):
     distance = target.dot((source*var).T[word])
     distance.sort()
     distance /= np.linalg.norm(distance)
-    distance = distance[(distance < cutoff)]
+    distance  = distance[(distance < cutoff)]
     idx = np.random.randint(len(distance))
     return distance, distance[idx], distance.index[idx]
 
@@ -44,13 +43,13 @@ def quality_filter(noun, low=-0.075, high=-0.010):
 
 verbose = True
 
-f_db = "JJ_noun_phrase.db"
-conn = sqlite3.connect(f_db)
+import h5py
+f_h5 = "JJ_noun_phrase.h5"
+h5   = h5py.File(f_h5, 'r')
 
-nouns = pd.read_sql("SELECT * FROM PCA_nouns",conn,index_col="index")
-adjs  = pd.read_sql("SELECT * FROM PCA_adjs", conn,index_col="index")
-var   = pd.read_sql("SELECT * FROM PCA_explained_variance", 
-                    conn,index_col="index")
+nouns = pd.DataFrame(h5["nouns"]["svd"][:], index=h5["nouns"]["words"][:])
+adjs  = pd.DataFrame(h5["adjs"]["svd"][:], index=h5["adjs"]["words"][:])
+var   = pd.DataFrame(h5["variance"][:])
 
 eigenvalue_cut = 300
 common_nouns   = 200
