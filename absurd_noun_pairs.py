@@ -1,36 +1,43 @@
 from __future__ import division
-import pandas as pd
 import numpy as np
 
-def anti_word(word,source,target,cutoff=-.002):
-    # Returns a word that is far from the target from an SVD approximation
-
-    distance = target.dot((source*var).T[word])
-    distance.sort()
+def anti_word(source_idx,source,target,cutoff=-.002):
+    # Returns a distance and word that is far from the target from an SVD approximation
+    
+    distance = np.dot(target, (source*var)[source_idx])
     distance /= np.linalg.norm(distance)
-    distance  = distance[(distance < cutoff)]
-    idx = np.random.randint(len(distance))
-    return distance, distance[idx], distance.index[idx]
 
-def absurd_JJ_JJ_NN(noun=None, cutoff=-0.002):
-    if noun == None:
-        noun = np.random.choice(nouns.index)
-        
-    distance1, s1, a1 = anti_word(noun, nouns, adjs, cutoff)
+    cut_idx  = distance<cutoff
+    
+    idx = np.arange(*distance.shape,dtype=int)[cut_idx]
+    keep_idx = np.random.choice(idx)
 
-    wx = adjs.T[distance1.index]
-    while True:
-        try:
-            distance2, s2, a2 = anti_word(a1, wx.T, wx.T, cutoff)
-            break
-        except:
-            cutoff /= 2
+    return distance, keep_idx
 
-    scores = distance1[a1], distance1[a2], s2
-    return (a1,a2,noun), scores
+def absurd_JJ_JJ_NN(noun_idx=None, cutoff=-0.002):
+
+    if noun_idx == None:
+        noun_idx = np.random.randint(vocab_nouns.size)
+
+    noun_dist, adj_idx1 = anti_word(noun_idx,
+                            source=svd_nouns,
+                            target=svd_adjs,
+                            cutoff=cutoff)
+
+    adj_dist, adj_idx2 = anti_word(adj_idx1,
+                                   source=svd_adjs,
+                                   target=svd_adjs,
+                                   cutoff=cutoff)
+
+    noun = vocab_nouns[noun_idx]
+    adj1 = vocab_adjs[adj_idx1]
+    adj2 = vocab_adjs[adj_idx2]
+
+    scores = noun_dist[adj_idx1], noun_dist[adj_idx2], adj_dist[adj_idx2]
+    return (adj1,adj2,noun), scores
 
 
-def quality_filter(noun, low=-0.075, high=-0.010):
+def quality_filter(noun=None, low=-0.075, high=-0.010):
     '''
     Generates absurd phrases that are not too absurd (which are boring,
     they use common adjectives), yet still have that je nes se pas
@@ -47,31 +54,31 @@ import h5py
 f_h5 = "JJ_noun_phrase.h5"
 h5   = h5py.File(f_h5, 'r')
 
-nouns = pd.DataFrame(h5["nouns"]["svd"][:], index=h5["nouns"]["words"][:])
-adjs  = pd.DataFrame(h5["adjs"]["svd"][:], index=h5["adjs"]["words"][:])
-var   = pd.DataFrame(h5["variance"][:])
-
 eigenvalue_cut = 300
 common_nouns   = 200
 common_adjs    = 400
-nouns = nouns.ix[common_nouns:,:eigenvalue_cut]
-adjs  = adjs.ix[common_adjs:,:eigenvalue_cut]
-var   = var[:eigenvalue_cut]
-explained_variance = var.ix[:,0].sum()
+
+vocab_nouns = h5["nouns"]["words"][common_nouns:]
+vocab_adjs  = h5["adjs"]["words"][common_adjs:]
+
+svd_nouns = h5["nouns"]["svd"][common_nouns:,:eigenvalue_cut]
+svd_adjs = h5["nouns"]["svd"][common_adjs:,:eigenvalue_cut]
+var = h5["variance"][:eigenvalue_cut]
+
+explained_variance = var[:,0].sum()
 
 # So we can multiply them together
-var = var.as_matrix().reshape(-1)
+var = var.reshape(-1)
 
 print "Explained variance in sample: ", explained_variance
 cutoff = -.005
 
 for k in xrange(500):
-    noun = np.random.choice(nouns.index)
-    phrase, scores = quality_filter(noun)
+    phrase, scores = quality_filter()
     
     if verbose:
         s1,s2,s3 = scores
-        output = "{:4f} {:4f} {:4f} {:4f} {:20s}"
+        output = "{: 0.3f} {: 0.3f} {: 0.3f} {: 0.3f} {:20s}"
         output_vals = sum(scores),s1,s2,s3, ' '.join(phrase)
     else:
         output = "{:.4f} {:20s}"
