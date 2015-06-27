@@ -1,8 +1,15 @@
 from __future__ import division
 import numpy as np
+import h5py
+
+f_h5 = "db/JJ_noun_phrase.h5"
+h5   = h5py.File(f_h5, 'r')
 
 def anti_word(source_idx,source,target,cutoff=-.002):
-    # Returns a distance and word that is far from the target from an SVD approximation
+    '''
+    Returns a distance and word that is far from the target 
+    from an SVD approximation.
+    '''
     
     distance = np.dot(target, (source*var)[source_idx])
     distance /= np.linalg.norm(distance)
@@ -48,40 +55,37 @@ def quality_filter(noun=None, low=-0.075, high=-0.010):
         total_score = sum(scores)
     return phrase, scores
 
-verbose = True
+if __name__ == "__main__":
+    verbose = True
 
-import h5py
-f_h5 = "JJ_noun_phrase.h5"
-h5   = h5py.File(f_h5, 'r')
+    eigenvalue_cut = 300
+    common_nouns   = 200
+    common_adjs    = 400
 
-eigenvalue_cut = 300
-common_nouns   = 200
-common_adjs    = 400
+    vocab_nouns = h5["nouns"]["words"][common_nouns:]
+    vocab_adjs  = h5["adjs"]["words"][common_adjs:]
 
-vocab_nouns = h5["nouns"]["words"][common_nouns:]
-vocab_adjs  = h5["adjs"]["words"][common_adjs:]
+    svd_nouns = h5["nouns"]["svd"][common_nouns:,:eigenvalue_cut]
+    svd_adjs = h5["nouns"]["svd"][common_adjs:,:eigenvalue_cut]
+    var = h5["variance"][:eigenvalue_cut]
 
-svd_nouns = h5["nouns"]["svd"][common_nouns:,:eigenvalue_cut]
-svd_adjs = h5["nouns"]["svd"][common_adjs:,:eigenvalue_cut]
-var = h5["variance"][:eigenvalue_cut]
+    explained_variance = var[:,0].sum()
 
-explained_variance = var[:,0].sum()
+    # So we can multiply them together
+    var = var.reshape(-1)
 
-# So we can multiply them together
-var = var.reshape(-1)
+    print "Explained variance in sample: ", explained_variance
+    cutoff = -.005
 
-print "Explained variance in sample: ", explained_variance
-cutoff = -.005
+    for k in xrange(500):
+        phrase, scores = quality_filter()
 
-for k in xrange(500):
-    phrase, scores = quality_filter()
-    
-    if verbose:
-        s1,s2,s3 = scores
-        output = "{: 0.3f} {: 0.3f} {: 0.3f} {: 0.3f} {:20s}"
-        output_vals = sum(scores),s1,s2,s3, ' '.join(phrase)
-    else:
-        output = "{:.4f} {:20s}"
-        output_vals = sum(scores), ' '.join(phrase)
+        if verbose:
+            s1,s2,s3 = scores
+            output = "{: 0.3f} {: 0.3f} {: 0.3f} {: 0.3f} {:20s}"
+            output_vals = sum(scores),s1,s2,s3, ' '.join(phrase)
+        else:
+            output = "{:.4f} {:20s}"
+            output_vals = sum(scores), ' '.join(phrase)
 
-    print output.format(*output_vals)
+        print output.format(*output_vals)
