@@ -9,6 +9,7 @@ h5   = h5py.File(f_h5, 'r')
 eigenvalue_cut = 300
 common_nouns   = 200
 common_adjs    = 400
+cutoff = -.005
 
 # Load the data vectors
 vocab_nouns = h5["nouns"]["words"][common_nouns:]
@@ -81,7 +82,6 @@ if __name__ == "__main__":
     #verbose = False
 
     print "Explained variance in sample: ", explained_variance
-    cutoff = -.005
 
     for k in xrange(500):
         phrase, scores = quality_filter()

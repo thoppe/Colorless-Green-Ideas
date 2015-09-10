@@ -1,5 +1,3 @@
-import numpy
-
 import os
 import json
 
@@ -7,28 +5,27 @@ import flask
 from flask import request
 app = flask.Flask(__name__)
 
-button_presses = 0
+import absurd_noun_pairs as ANP
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route('/', methods=['GET'])
 def front_page():
     global button_presses
     
     args = {}
-    args["intro_text"] = "Generalizing Chomsky's famous sentence into syntactic singular vectors."
     args["title"]      = "Colorless green ideas"
     args["author"]     = "travis hoppe"
     args["author_url"] = "http://thoppe.github.io"
     args["project_url"] = "https://github.com/thoppe/Colorless-Green-Ideas"
     args["button_status"] = "You have not pressed the button."
 
-    if request.method == 'GET':
-        button_presses = 0
+    result_list = []
 
-    if request.method == 'POST':
-        button_presses += 1
-        msg = "The button has been pressed {} times"
-        args["button_status"] = msg.format(button_presses)
-    
+    for k in xrange(15):
+        phrase, scores = ANP.quality_filter()
+        result_list.append(' '.join(phrase))
+
+    args["result_list"] = result_list
     return flask.render_template('index.html', **args)
 
 if __name__ == '__main__':
