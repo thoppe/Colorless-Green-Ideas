@@ -15,9 +15,10 @@ def front_page():
     
     args = {}
     args["intro_text"] = "Generalizing Chomsky's famous sentence into syntactic singular vectors."
-    args["title"]      = "flask-colorless"
+    args["title"]      = "Colorless green ideas"
     args["author"]     = "travis hoppe"
     args["author_url"] = "http://thoppe.github.io"
+    args["project_url"] = "https://github.com/thoppe/Colorless-Green-Ideas"
     args["button_status"] = "You have not pressed the button."
 
     if request.method == 'GET':

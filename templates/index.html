@@ -1,14 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
 
-{% extends "layout.html" %}
-{% block body %}
+    <link rel="shortcut icon"
+          href="{{ url_for('static', filename='trans_flavico.png') }}">
+    
+    <title>{{title}}</title>
+    <link rel=stylesheet type=text/css
+          href="{{url_for('static', filename='viewer.css')}}">
 
-<div class="container">
-  
+    <link rel="stylesheet" 
+          href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    
+  </head>
+  <body>
+
+    <div class="container">
+
+      
+      <div class="header">
+        <a href="{{project_url}}">
+          {{title}}
+        </a>
+      </div>
+     
+
+      <div class="content">
+        Hi.
+      </div>
+
+      <div class="footer">
+        <a href="http://thoppe.github.io/">project by travis hoppe</a>
+      </div>
+
+      
+      
+    </div>
+
+    
+  </body>
+</html>
+
+<!---
+  <a>
   <h1 id="big-title">{{title}}</h1>
+  </a>
 
-  {{intro_text}}
+  Generalizing Chomsky's 
+  <a href="https://en.wikipedia.org/wiki/Colorless_green_ideas_sleep_furiously">famous sentence</a> 
+  into syntactic singular vectors. Refresh for more semantically precise nonsense.
 
   </br> </br>
+
+  <div style="font-family: 'Vollkorn', serif;">
+    <h2>unrestricted explicit polouse</h2>
+  </div>
+  {{colorless_results}}
 
   For example, here's a button:
   <form method=post class="pure-form">
@@ -32,4 +82,5 @@
 
 </div>
 
-{% endblock %}
+ endblock %}
+--->
