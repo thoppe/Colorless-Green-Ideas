@@ -5,6 +5,27 @@ import h5py
 f_h5 = "db/JJ_noun_phrase.h5"
 h5   = h5py.File(f_h5, 'r')
 
+# Fixed parameters
+eigenvalue_cut = 300
+common_nouns   = 200
+common_adjs    = 400
+
+# Load the data vectors
+vocab_nouns = h5["nouns"]["words"][common_nouns:]
+vocab_adjs  = h5["adjs"]["words"][common_adjs:]
+
+svd_nouns = h5["nouns"]["svd"][common_nouns:,:eigenvalue_cut]
+svd_adjs = h5["nouns"]["svd"][common_adjs:,:eigenvalue_cut]
+var = h5["variance"][:eigenvalue_cut]
+
+# Close H5 file, don't need it anymore
+h5.close()
+
+explained_variance = var[:,0].sum()
+
+# Reshaped so we can multiply them together
+var = var.reshape(-1)
+
 def anti_word(source_idx,source,target,cutoff=-.002):
     '''
     Returns a distance and word that is far from the target 
@@ -57,22 +78,7 @@ def quality_filter(noun=None, low=-0.075, high=-0.010):
 
 if __name__ == "__main__":
     verbose = True
-
-    eigenvalue_cut = 300
-    common_nouns   = 200
-    common_adjs    = 400
-
-    vocab_nouns = h5["nouns"]["words"][common_nouns:]
-    vocab_adjs  = h5["adjs"]["words"][common_adjs:]
-
-    svd_nouns = h5["nouns"]["svd"][common_nouns:,:eigenvalue_cut]
-    svd_adjs = h5["nouns"]["svd"][common_adjs:,:eigenvalue_cut]
-    var = h5["variance"][:eigenvalue_cut]
-
-    explained_variance = var[:,0].sum()
-
-    # So we can multiply them together
-    var = var.reshape(-1)
+    #verbose = False
 
     print "Explained variance in sample: ", explained_variance
     cutoff = -.005
