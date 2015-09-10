@@ -1,0 +1,35 @@
+
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="container">
+  
+  <h1 id="big-title">{{title}}</h1>
+
+  {{intro_text}}
+
+  </br> </br>
+
+  For example, here's a button:
+  <form method=post class="pure-form">
+    <button class="btn"
+            onclick="" id="first-button">
+      <i class="fa fa-connectdevelop"></i>
+		  Press me!
+    </button>
+  </form>
+
+  <div class="text-muted">
+    {{button_status}}
+  </div>
+
+  </br> </br>
+
+
+<div class="footer">
+  <a href="{{author_url}}">project by {{author}}.</a>
+</div>
+
+</div>
+
+{% endblock %}
