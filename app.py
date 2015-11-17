@@ -1,5 +1,4 @@
 import flask
-from flask import request
 app = flask.Flask(__name__)
 
 import absurd_noun_pairs as ANP
